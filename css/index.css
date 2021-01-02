@@ -1,0 +1,12 @@
+body {
+    background-color: #303030;
+    color:lightblue;
+}
+
+.title{
+    color:#ff8c00;
+}
+
+.converter textarea{
+    min-width: 100%;
+}
