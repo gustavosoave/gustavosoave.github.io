@@ -1,39 +1,98 @@
 
-const firstChar = (string) => {
-    var firstWord = string.trim();
-    console.log(firstWord);
-    
+const firstChar = (fullString) => {
+    var firstWord = fullString.trim();
     var first = firstWord.charAt(0);
 
-    if(first != '('){
+    if (first != '(') {
         return first;
-    }else{
-        firstChar(firstWord.substring(1, length));
+    } else {
+        first = firstChar(firstWord.substring(1, firstWord.length));
+        return first;
     }
 
+}
+
+const removeSpacesAndBreakLines = (string) => {
+    return string.split(" ").join("").split("\r").join("").split("\n").join("").trim();
 }
 
 const format = (string) => {
+    var originalString = string;
     var firtsCommand = firstChar(string);
-    if(firtsCommand.toUpperCase() === 'D'){
-        var newString = string.split('=').join('\\r\\n');
-        console.log(newString);
+    if (firtsCommand.toUpperCase() === 'D') {
+        string = removeSpacesAndBreakLines(string);
+        var strings = string.split("(");
+        var finalString = "";
 
-    }else if(firtsCommand.toUpperCase() === 'J'){
-        alert('sounds like a JDBC')
-    }else{
-        alert()
+        var tabs = 1;
+        var line = 0;
+        strings.forEach((s) => {
+
+            finalString += Array(tabs).join(" ") + (line == 0 ? "" : "(") + s + "\r\n";
+
+            if (s.charAt(s.length - 1) == '=') {
+                tabs += 2;
+            }
+            if (s.slice(-2) == '))') {
+                tabs -= 2;
+            }
+
+            line++;
+        })
+
+        return finalString;
+
+    } else if (firtsCommand.toUpperCase() === 'J') {
+        finalString = removeSpacesAndBreakLines(string);
+
+        return finalString;
+    } else {
+        alert('It looks a bad request (HTTP ERROR 400)');
+        return originalString;
     }
 
 }
 
+const toJDBC = (string) => {
+    string = removeSpacesAndBreakLines(string);
+    if (string.charAt(0) != "(") {
+        return "(" + string + ")";
+    }
+    return " jdbc:oracle:thin:@" + string;
 
+}
 
-$(document).ready( () => {
+const toTNS = (string) => {
+    string = removeSpacesAndBreakLines(string);
+    
+    if(string.includes("DESCRIPTION")){
+        string = string.replace("jdbc:oracle:thin:@", "");
+        return string;
+    }
+}
+
+$(document).ready(() => {
+
     $('#format').click(() => {
         var string = $('#string').val();
-        format(string);
-    });  
+        $('#string').val(format(string));
+    });
+
+    $('#toJDBC').click(() => {
+        var string = $('#string').val();
+        $("#string").val(toJDBC(string));
+    });
+
+    $('#toTNS').click(()=>{
+        var string = $('#string').val();
+        $("#string").val(toTNS(string));
+    });
+
+    $("#clipboard").click(()=> {
+        $("#string").select();
+        document.execCommand("copy");
+        alert("Text copied to your clipboard");
+    })
 })
 
 
